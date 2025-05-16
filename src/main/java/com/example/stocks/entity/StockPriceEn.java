@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 @Getter
 @NoArgsConstructor
@@ -14,7 +15,7 @@ import java.math.BigDecimal;
 @Table(name="stock_price",indexes = {
             @Index(name = "idx_price_volume_value", columnList = "closing_price, price_change_rate, trading_value")
         })
-public class StockPrice {
+public class StockPriceEn {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,7 +23,7 @@ public class StockPrice {
 
     @ManyToOne
     @JoinColumn(name = "short_code", nullable = false, columnDefinition = "varchar(15)") //길이 15, 빈칸 비 허용
-    private StockInfo stockInfo;
+    private StockInfoEn stockInfo;
 
     @Column(nullable = false) // 빈칸 비 허용
     private int closingPrice;
@@ -53,4 +54,8 @@ public class StockPrice {
 
     @Column(nullable = false)
     private Long listedStockNum;
+
+    @Temporal(TemporalType.DATE)
+    @Column(nullable = false)
+    private Date date;
 }
