@@ -8,13 +8,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class StockInfoSer {
+public class StockErrorSer {
     private final StockInfoRe stockInfoRe;
 
-    public StockInfoSer(StockInfoRe stockInfoRe) {
+    public StockErrorSer(StockInfoRe stockInfoRe) {
         this.stockInfoRe = stockInfoRe;
     }
-
+    // 주식 ID에 일치하는 정보가 없을 때
     public StockInfoEn getStockById(Long id) {
         return (StockInfoEn) stockInfoRe.findById(id)
                 .orElseThrow(() -> {

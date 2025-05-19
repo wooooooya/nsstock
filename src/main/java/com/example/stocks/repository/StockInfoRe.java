@@ -8,5 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface StockInfoRe extends JpaRepository<StockInfoEn, String> {
+    //NPE 방지
     Optional<Object> findById(Long id);
 }
