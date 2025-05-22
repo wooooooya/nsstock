@@ -17,10 +17,6 @@ public class KospiIndexEn {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int kospiId;
-
-    @Temporal(TemporalType.DATE)
-    @Column(nullable = false)
     private LocalDate date;
 
     @Column(nullable = false, precision = 7, scale = 2)
