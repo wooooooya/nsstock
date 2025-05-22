@@ -76,7 +76,7 @@ public class StockServiceSer {
                 .indecrease(Long.parseLong(indecreaseFormatted)) // 문자열 형태의 증감 수치를 long으로 변환하여 저장
                 .percentage(Double.parseDouble(percentageFormatted)) // 문자열 형태의 증감률을 double로 변환하여 저장
                 .build();
-        
+
         // Kospi DTO 생성
         MaResKospiIndexDto kospiDto = MaResKospiIndexDto.builder()
                 .previousClose(previousClose)

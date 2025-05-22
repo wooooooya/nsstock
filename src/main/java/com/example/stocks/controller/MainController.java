@@ -1,20 +1,19 @@
 package com.example.stocks.controller;
 
+import com.example.stocks.dto.MaResDto;
 import com.example.stocks.service.StockServiceSer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"})
 @RestController
 @RequestMapping("/stock")
 @RequiredArgsConstructor
-
 public class MainController {
-    private final StockServiceSer StockServiceSer;
+    private final StockServiceSer stockServiceSer;
 
+    // 코스피 메인 데이터 조회 API
+    @GetMapping("/main")
+    public MaResDto getMainStockInfo() {
+        return stockServiceSer.kospiIndex();
+    }
 }
-
-//    @GetMapping("")
-//    public List<ToDoList> getAllToDos() {
-//        return toDoListService.getAllToDos();
-//    }

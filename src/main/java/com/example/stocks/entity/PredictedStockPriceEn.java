@@ -48,7 +48,6 @@ public class PredictedStockPriceEn {
     private int predictedLowestPrice;
 
     @CreationTimestamp // 타임스탬프 기능 적용
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
 }

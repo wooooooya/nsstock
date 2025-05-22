@@ -38,7 +38,7 @@ public class KospiIndexEn {
     private BigDecimal lowestPrice;
 
     @Column(nullable = false)
-    private Long tradingVolume;
+    private int tradingVolume;
 
     @Column(nullable = false)
     private Long tradingValue;

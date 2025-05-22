@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Getter
 @NoArgsConstructor
@@ -21,24 +22,28 @@ public class ExchangeRateEn {
     @Column(nullable = false, length = 10)
     private String currencyCode;
 
+    @Temporal(TemporalType.DATE)
+    @Column(nullable = false)
+    private LocalDate date;
+
     @Column(nullable = false, precision = 10, scale = 4)
     private BigDecimal exchangeRate;
 
-    @Column(nullable = false, precision = 10, scale = 4)
-    private BigDecimal previousDifference;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal change;
 
-    @Column(nullable = false, precision = 6, scale = 4)
-    private BigDecimal changeRate;
-
-    @Column(nullable = false, precision = 10, scale = 4)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal openingPrice;
 
-    @Column(nullable = false, precision = 10, scale = 4)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal highestPrice;
 
-    @Column(nullable = false, precision = 10, scale = 4)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal lowestPrice;
 
-    @Column(nullable = false, precision = 10, scale = 4)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal closingPrice;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal tradingVolume;
 }
