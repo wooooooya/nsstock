@@ -14,4 +14,3 @@ public interface KospiIndexRe extends JpaRepository<KospiIndexEn, LocalDate> {
     @Query(value = "SELECT * FROM kospi_index WHERE date = :date", nativeQuery = true)
     Optional<KospiIndexEn> findByDate(@Param("date") LocalDate date);
 }
-

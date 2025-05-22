@@ -12,5 +12,5 @@ import java.util.Optional;
 @Repository
 public interface OilPriceRe extends JpaRepository<OilPriceEn, Integer> {
     @Query(value = "SELECT * FROM oil_price WHERE oil_type = :oil_type AND date = :date", nativeQuery = true)
-    Optional<OilPriceEn> findByOilIdANDDate(@Param("oil_type") String oilType, @Param("date") LocalDate date);
+    Optional<OilPriceEn> findByOilTypeANDDate(@Param("oil_type") String oilType, @Param("date") LocalDate date);
 }

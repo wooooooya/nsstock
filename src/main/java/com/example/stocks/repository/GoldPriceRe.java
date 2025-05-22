@@ -13,5 +13,5 @@ import java.util.Optional;
 @Repository
 public interface GoldPriceRe extends JpaRepository<GoldPriceEn, Integer> {
     @Query(value = "SELECT * FROM gold_price WHERE gold_type = :gold_type AND date = :date", nativeQuery = true)
-    Optional<OilPriceEn> findByGoldIdANDDate(@Param("gold_type") String goldType, @Param("date") LocalDate date);
+    Optional<OilPriceEn> findByGoldTypeANDDate(@Param("gold_type") String goldType, @Param("date") LocalDate date);
 }
