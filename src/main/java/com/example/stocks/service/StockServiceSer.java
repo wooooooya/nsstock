@@ -1,16 +1,10 @@
 package com.example.stocks.service;
 
 import com.example.stocks.dto.*;
-import com.example.stocks.entity.ExchangeRateEn;
-import com.example.stocks.entity.GoldPriceEn;
-import com.example.stocks.entity.KospiIndexEn;
-import com.example.stocks.entity.OilPriceEn;
+import com.example.stocks.entity.*;
 import com.example.stocks.entity.enumeration.GoldType;
 import com.example.stocks.entity.enumeration.OilType;
-import com.example.stocks.repository.ExchangeRateRe;
-import com.example.stocks.repository.GoldPriceRe;
-import com.example.stocks.repository.KospiIndexRe;
-import com.example.stocks.repository.OilPriceRe;
+import com.example.stocks.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,13 +22,8 @@ public class StockServiceSer {
     private final KospiIndexRe kospiIndexRe; // 코스피
     private final ExchangeRateRe exchangePriceRe; // 환율
     private final OilPriceRe oilPriceRe; // 유가
-//    private final GoldPriceRe goldPriceRe; // 금
-
-    // 오늘 날짜 기준 계산
-    LocalDate today = LocalDate.now();
-    LocalDate startDate = today.minusDays(15); // 15일 전
-    LocalDate yesterday = today.minusDays(1);   // 어제
-    LocalDate dayBefore = today.minusDays(2);   // 그저께
+    private final StockPriceRe stockPriceRe; // 거래량
+    private List<MaResTradingVolumeDto> tradingVolumeList;
 
     public MaResDto kospiIndex() {
 
@@ -225,58 +214,49 @@ public class StockServiceSer {
                 .build();
     }
 
+    public MaResDto tradingVolumeTop10() {
+        LocalDate recentDate = stockPriceRe.findMaxDate();
+        if (recentDate == null) {
+            return MaResDto.builder()
+                    .code("ER")
+                    .message("No data available")
+                    .build();
+        }
 
+        LocalDate previousDate = stockPriceRe.findPreviousDate(recentDate);
 
-//    public MaResDto goldPrice() {
-//        GoldType goldType = GoldType.GOLD_1KG;
-//
-//        // 1. 최신 날짜를 DB에서 조회
-//        List<GoldPriceEn> latestTwo = goldPriceRe.findTop2ByGoldTypeOrderByDateDesc(goldType);
-//
-//        if (latestTwo.size() < 2) {
-//            throw new RuntimeException("전일 또는 전전일 데이터가 부족합니다.");
-//        }
-//
-//        GoldPriceEn yesterdayPrice = latestTwo.get(0);   // 가장 최근
-//        GoldPriceEn dayBeforePrice = latestTwo.get(1);   // 바로 전날
-//
-//        int yClose = yesterdayPrice.getClosingPrice();
-//        int dClose = dayBeforePrice.getClosingPrice();
-//        int diff = yClose - dClose;
-//
-//        long indecrease = diff;
-//        double percentage = (dClose == 0) ? 0.0 : ((double) diff / dClose) * 100;
-//
-//        MaResDto.PreviousClose previousClose = MaResDto.PreviousClose.builder()
-//                .price(yClose)
-//                .indecrease(indecrease)
-//                .percentage(Math.round(percentage * 100.0) / 100.0)
-//                .build();
-//
-//        // 2. 차트용 데이터 조회용: 가장 오래된 날짜 ~ 어제 날짜까지 조회
-//        LocalDate startDate = LocalDate.now().minusDays(30); // 예: 최근 30일
-//        LocalDate endDate = yesterdayPrice.getDate(); // 최신 날짜 기준
-//
-//        List<GoldPriceEn> goldList = goldPriceRe.findAllByGoldTypeAndDateBetweenOrderByDateAsc(
-//                goldType, startDate, endDate
-//        );
-//
-//        List<MaResGoldPriceDto.GoldChart> goldChartList = goldList.stream()
-//                .map(item -> MaResGoldPriceDto.GoldChart.builder()
-//                        .gChat((long) item.getClosingPrice())
-//                        .gDate(item.getDate().toString())
-//                        .build())
-//                .toList();
-//
-//        MaResGoldPriceDto goldDto = MaResGoldPriceDto.builder()
-//                .goldPreviousClose(previousClose)
-//                .goldChat(goldChartList)
-//                .build();
-//
-//        return MaResDto.builder()
-//                .code("SU")
-//                .message("Success")
-//                .goldPrice(goldDto)
-//                .build();
-//    }
+        List<StockPriceEn> recentList = stockPriceRe.findTop10ByRecentDateOrderByTradingVolumeDesc();
+
+        List<MaResTradingVolumeDto> resultList = new ArrayList<>();
+
+        for (StockPriceEn recentStock : recentList) {
+            long recentVolume = recentStock.getTradingVolume();
+            long volumeDiff = 0L;
+            double volumeRate = 0.0;
+
+            if (previousDate != null) {
+                String shortCode = recentStock.getStockInfo().getShortCode();
+                Optional<StockPriceEn> prevStockOpt = stockPriceRe.findByShortCodeAndDate(shortCode, previousDate);
+                if (prevStockOpt.isPresent()) {
+                    long prevVolume = prevStockOpt.get().getTradingVolume();
+                    volumeDiff = recentVolume - prevVolume;
+                    volumeRate = (prevVolume == 0) ? 0.0 : ((double) volumeDiff / prevVolume) * 100.0;
+                }
+            }
+
+            resultList.add(MaResTradingVolumeDto.builder()
+                    .stocks(recentStock.getStockInfo().getKorStockName())
+                    .volume(recentVolume)
+                    .volumeIndecrease(volumeDiff)
+                    .volumePercentage(volumeRate)
+                    .build());
+        }
+
+        return MaResDto.builder()
+                .code("SU")
+                .message("Success")
+                .tradingVolume(resultList)
+                .build();
+    }
+
 }
