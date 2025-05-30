@@ -209,8 +209,6 @@ public class StockServiceSer {
                 .build();
     }
 
-
-
     public MaResDto oilPrice() {
         // 유가 종류 지정 (휘발유로 고정)
         OilType oilType = OilType.휘발유;

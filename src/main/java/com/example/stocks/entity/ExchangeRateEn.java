@@ -22,7 +22,6 @@ public class ExchangeRateEn {
     @Column(nullable = false, length = 10)
     private String currencyCode;
 
-    @Temporal(TemporalType.DATE)
     @Column(nullable = false)
     private LocalDate date;
 

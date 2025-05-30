@@ -30,7 +30,4 @@ public class MainController {
                 .goldPrice(goldDto != null ? goldDto.getGoldPrice() : null)
                 .build();
     }
-
-
-
 }
