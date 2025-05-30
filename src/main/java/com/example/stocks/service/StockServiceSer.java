@@ -27,7 +27,7 @@ public class StockServiceSer {
     private final KospiIndexRe kospiIndexRe; // 코스피
     private final ExchangeRateRe exchangePriceRe; // 환율
     private final OilPriceRe oilPriceRe; // 유가
-    private final GoldPriceRe goldPriceRe; // 금
+//    private final GoldPriceRe goldPriceRe; // 금
 
     // 오늘 날짜 기준 계산
     LocalDate today = LocalDate.now();
@@ -37,11 +37,11 @@ public class StockServiceSer {
 
     public MaResDto kospiIndex() {
 
-        // 15일치 차트 데이터를 날짜 역순으로 한 번에 불러오기
-        List<KospiIndexEn> indexList = kospiIndexRe.findAllBetweenDates(startDate, yesterday); // 코스피 지수
+        // 15일치 차트 데이터를 최신 날짜 기준으로 조회 (쿼리 내부에서 날짜 계산)
+        List<KospiIndexEn> indexList = kospiIndexRe.findLatest15Days();
 
         // 날짜 오름차순 정렬
-        indexList.sort((a, b) -> a.getDate().compareTo(b.getDate()));
+        indexList.sort(Comparator.comparing(KospiIndexEn::getDate));
 
         // 차트용 리스트 생성
         List<MaResKospiIndexDto.KospiChart> kospiChartList = indexList.stream()
@@ -51,42 +51,36 @@ public class StockServiceSer {
                         .build())
                 .toList();
 
-        Optional<KospiIndexEn> yesterdayOpt = kospiIndexRe.findByDate(yesterday); // 어제의 데이터
-        Optional<KospiIndexEn> dayBeforeOpt = kospiIndexRe.findByDate(dayBefore);  // 그저께의 데이터
-
-        // 예외
-        if (yesterdayOpt.isEmpty() || dayBeforeOpt.isEmpty()) {
-            return null;
+        // 최신 날짜에서 어제, 그저께 날짜를 계산
+        if (indexList.size() < 3) {
+            return null; // 데이터가 부족하면 null 반환
         }
 
-        BigDecimal yesterdayPrice = yesterdayOpt.get().getClosingPrice(); // 어제의 종가
-        BigDecimal dayBeforePrice = dayBeforeOpt.get().getClosingPrice(); // 그저께의 종가
+        KospiIndexEn latest = indexList.get(indexList.size() - 1);         // 최신
+        KospiIndexEn yesterday = indexList.get(indexList.size() - 2);      // 어제
+        KospiIndexEn dayBefore = indexList.get(indexList.size() - 3);      // 그저께
 
-// 증감 계산 (전일 종가 - 전전일 종가)
+        BigDecimal yesterdayPrice = yesterday.getClosingPrice();
+        BigDecimal dayBeforePrice = dayBefore.getClosingPrice();
+
+        // 증감 계산
         BigDecimal diff = yesterdayPrice.subtract(dayBeforePrice);
-
-// 증감 수치를 문자열로 포맷 (+ 또는 - 붙여서 출력) (예: +100, -50)
         String indecreaseFormatted = (diff.signum() >= 0 ? "+" : "") + diff.longValue();
 
-// 증감률 계산 (증감 / 전전일 종가 * 100), 전전일 종가가 0이면 0.0으로 처리 (0으로 나누는 예외 방지)
+        // 증감률 계산
         double percentage = dayBeforePrice.compareTo(BigDecimal.ZERO) == 0
                 ? 0.0
-                : diff.divide(dayBeforePrice, 4, RoundingMode.HALF_UP) // 소수점 4자리까지 계산
-                .multiply(BigDecimal.valueOf(100)) // 백분율 변환
+                : diff.divide(dayBeforePrice, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
                 .doubleValue();
 
-// 증감률을 문자열로 포맷 (부호 포함, 소수점 둘째 자리까지)
-// 예: +3.21, -2.45 형식으로 출력됨
         String percentageFormatted = String.format("%+.2f", percentage);
 
-// 전일 종가 정보 생성 (MaResDto의 PreviousClose 객체 생성)
-// - price: 어제 종가 (long)
-// - indecrease: 전일 대비 증감 수치 (예: +100 또는 -50 → long 타입으로 저장)
-// - percentage: 전일 대비 증감률 (예: +3.21% 또는 -2.45% → double 타입으로 저장)
+        // 전일 종가 정보 생성
         MaResDto.PreviousClose previousClose = MaResDto.PreviousClose.builder()
                 .price(yesterdayPrice.longValue())
-                .indecrease(Long.parseLong(indecreaseFormatted)) // 문자열 형태의 증감 수치를 long으로 변환하여 저장
-                .percentage(Double.parseDouble(percentageFormatted)) // 문자열 형태의 증감률을 double로 변환하여 저장
+                .indecrease(Long.parseLong(indecreaseFormatted))
+                .percentage(Double.parseDouble(percentageFormatted))
                 .build();
 
         // Kospi DTO 생성
@@ -103,112 +97,67 @@ public class StockServiceSer {
                 .build();
     }
 
-    // 환율
+    // 환율 (USD 기준, KOSPI와 동일한 구조)
     public MaResDto exchangeRate() {
-        // 15일치 환율 데이터 불러오기
-        List<ExchangeRateEn> rateList = exchangePriceRe.findAllBetweenDates(startDate, yesterday);
+        String currency = "USD";
+
+        // 환율: 최근 15일 데이터 (USD 기준)
+        List<ExchangeRateEn> rateList = exchangePriceRe.findLatest15DaysByCurrency(currency);
+
+        if (rateList.size() < 2) {
+            return null; // 최소 어제, 그저께가 있어야 함
+        }
 
         // 날짜 오름차순 정렬
-        rateList.sort((a, b) -> a.getDate().compareTo(b.getDate()));
+        rateList.sort(Comparator.comparing(ExchangeRateEn::getDate));
 
-        // 차트용 리스트 생성
-        List<MaResExchangeRateDto.ExchangeChart> exchangeChats = rateList.stream()
-                .map(item -> MaResExchangeRateDto.ExchangeChart.builder()
-                        .eChat(item.getClosingPrice().longValue())
-                        .eDate(item.getDate().toString())
+        // 차트 데이터 구성
+        List<MaResExchangeRateDto.ExchangeChart> exchangeChartList = rateList.stream()
+                .map(data -> MaResExchangeRateDto.ExchangeChart.builder()
+                        .eDate(data.getDate().toString())
+                        .eChat(data.getClosingPrice().longValue())
                         .build())
                 .toList();
 
-        // 어제와 그저께의 USD 환율 조회
-        Optional<ExchangeRateEn> yesterdayOpt = exchangePriceRe.findByCurrencyCodeANDDate("USD", yesterday);
-        Optional<ExchangeRateEn> dayBeforeOpt = exchangePriceRe.findByCurrencyCodeANDDate("USD", dayBefore);
+        // 어제와 그저께 데이터
+        ExchangeRateEn yesterday = rateList.get(rateList.size() - 1);
+        ExchangeRateEn dayBefore = rateList.get(rateList.size() - 2);
 
-        if (yesterdayOpt.isEmpty() || dayBeforeOpt.isEmpty()) {
-            return null;
-        }
-
-        BigDecimal yesterdayPrice = yesterdayOpt.get().getClosingPrice();
-        BigDecimal dayBeforePrice = dayBeforeOpt.get().getClosingPrice();
+        BigDecimal yClose = yesterday.getClosingPrice();
+        BigDecimal dClose = dayBefore.getClosingPrice();
 
         // 증감 계산
-        BigDecimal diff = yesterdayPrice.subtract(dayBeforePrice);
-        String indecreaseFormatted = (diff.signum() >= 0 ? "+" : "") + diff.longValue();
+        BigDecimal diff = yClose.subtract(dClose);
+        long indecrease = diff.longValue();
 
         // 증감률 계산
-        double percentage = dayBeforePrice.compareTo(BigDecimal.ZERO) == 0
+        double percentage = dClose.compareTo(BigDecimal.ZERO) == 0
                 ? 0.0
-                : diff.divide(dayBeforePrice, 4, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100)).doubleValue();
-        String percentageFormatted = String.format("%+.2f", percentage);
+                : diff.divide(dClose, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .doubleValue();
 
-        // 환율 전일 종가 정보 생성
+        // 환율 전일 종가 정보 DTO
         MaResDto.PreviousClose previousClose = MaResDto.PreviousClose.builder()
-                .price(yesterdayPrice.longValue())
-                .indecrease(Long.parseLong(indecreaseFormatted))
-                .percentage(Double.parseDouble(percentageFormatted))
+                .price(yClose.longValue())
+                .indecrease(indecrease)
+                .percentage(percentage)
                 .build();
 
         // 환율 정보 DTO 생성
-        MaResExchangeRateDto exchangeDto = MaResExchangeRateDto.builder()
+        MaResExchangeRateDto exchangeRateDto = MaResExchangeRateDto.builder()
                 .exchangePreviousClose(previousClose)
-                .exchangeChat(exchangeChats)
+                .exchangeChat(exchangeChartList)
                 .build();
 
         // 최종 응답 DTO 생성
         return MaResDto.builder()
                 .code("SU")
                 .message("Success")
-                .exchangeRate(exchangeDto)
+                .exchangeRate(exchangeRateDto)
                 .build();
     }
-
-    public MaResDto goldPrice() {
-        GoldType goldType = GoldType.GOLD_1KG;
-
-        // 1. 금 차트용 데이터 조회
-        List<GoldPriceEn> goldList = goldPriceRe.findAllByGoldTypeAndDateBetween(
-                goldType, startDate, yesterday
-        );
-
-        List<MaResGoldPriceDto.GoldChart> goldChartList = goldList.stream()
-                .map(item -> MaResGoldPriceDto.GoldChart.builder()
-                        .gChat((long) item.getClosingPrice())
-                        .gDate(item.getDate().toString())
-                        .build())
-                .toList();
-
-        // 2. 전일, 전전일 데이터 조회
-        GoldPriceEn yesterdayPrice = goldPriceRe.findByGoldTypeAndDate(goldType, yesterday)
-                .orElseThrow(() -> new RuntimeException("전일 데이터 없음"));
-
-        GoldPriceEn dayBeforePrice = goldPriceRe.findByGoldTypeAndDate(goldType, dayBefore)
-                .orElseThrow(() -> new RuntimeException("전전일 데이터 없음"));
-
-        int yClose = yesterdayPrice.getClosingPrice();
-        int dClose = dayBeforePrice.getClosingPrice();
-        int diff = yClose - dClose;
-
-        long indecrease = diff;
-        double percentage = (dClose == 0) ? 0.0 : ((double) diff / dClose) * 100;
-
-        MaResDto.PreviousClose previousClose = MaResDto.PreviousClose.builder()
-                .price(yClose)
-                .indecrease(indecrease)
-                .percentage(Math.round(percentage * 100.0) / 100.0) // 소수점 2자리 반올림
-                .build();
-
-        MaResGoldPriceDto goldDto = MaResGoldPriceDto.builder()
-                .goldPreviousClose(previousClose)
-                .goldChat(goldChartList)
-                .build();
-
-        return MaResDto.builder()
-                .code("SU")
-                .message("Success")
-                .goldPrice(goldDto)
-                .build();
-    }
-
+    
     public MaResDto oilPrice() {
         // 유가 종류 지정 (휘발유로 고정)
         OilType oilType = OilType.휘발유;
@@ -270,4 +219,57 @@ public class StockServiceSer {
                 .oilPrice(oilDto) // 유가 데이터 세팅
                 .build();
     }
+
+//    public MaResDto goldPrice() {
+//        GoldType goldType = GoldType.GOLD_1KG;
+//
+//        // 1. 최신 날짜를 DB에서 조회
+//        List<GoldPriceEn> latestTwo = goldPriceRe.findTop2ByGoldTypeOrderByDateDesc(goldType);
+//
+//        if (latestTwo.size() < 2) {
+//            throw new RuntimeException("전일 또는 전전일 데이터가 부족합니다.");
+//        }
+//
+//        GoldPriceEn yesterdayPrice = latestTwo.get(0);   // 가장 최근
+//        GoldPriceEn dayBeforePrice = latestTwo.get(1);   // 바로 전날
+//
+//        int yClose = yesterdayPrice.getClosingPrice();
+//        int dClose = dayBeforePrice.getClosingPrice();
+//        int diff = yClose - dClose;
+//
+//        long indecrease = diff;
+//        double percentage = (dClose == 0) ? 0.0 : ((double) diff / dClose) * 100;
+//
+//        MaResDto.PreviousClose previousClose = MaResDto.PreviousClose.builder()
+//                .price(yClose)
+//                .indecrease(indecrease)
+//                .percentage(Math.round(percentage * 100.0) / 100.0)
+//                .build();
+//
+//        // 2. 차트용 데이터 조회용: 가장 오래된 날짜 ~ 어제 날짜까지 조회
+//        LocalDate startDate = LocalDate.now().minusDays(30); // 예: 최근 30일
+//        LocalDate endDate = yesterdayPrice.getDate(); // 최신 날짜 기준
+//
+//        List<GoldPriceEn> goldList = goldPriceRe.findAllByGoldTypeAndDateBetweenOrderByDateAsc(
+//                goldType, startDate, endDate
+//        );
+//
+//        List<MaResGoldPriceDto.GoldChart> goldChartList = goldList.stream()
+//                .map(item -> MaResGoldPriceDto.GoldChart.builder()
+//                        .gChat((long) item.getClosingPrice())
+//                        .gDate(item.getDate().toString())
+//                        .build())
+//                .toList();
+//
+//        MaResGoldPriceDto goldDto = MaResGoldPriceDto.builder()
+//                .goldPreviousClose(previousClose)
+//                .goldChat(goldChartList)
+//                .build();
+//
+//        return MaResDto.builder()
+//                .code("SU")
+//                .message("Success")
+//                .goldPrice(goldDto)
+//                .build();
+//    }
 }
