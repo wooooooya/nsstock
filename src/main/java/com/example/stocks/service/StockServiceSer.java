@@ -99,16 +99,19 @@ public class StockServiceSer {
 
     // 환율 (USD 기준, KOSPI와 동일한 구조)
     public MaResDto exchangeRate() {
-        String currency = "USD";
+        String currency = "미국 달러 (USD)";
 
-        // 환율: 최근 15일 데이터 (USD 기준)
+        // USD 기준 최근 15개 환율 데이터 조회 (최신순 -> 정렬 필요)
         List<ExchangeRateEn> rateList = exchangePriceRe.findLatest15DaysByCurrency(currency);
 
-        if (rateList.size() < 2) {
-            return null; // 최소 어제, 그저께가 있어야 함
+        if (rateList == null || rateList.size() < 2) {
+            return MaResDto.builder()
+                    .code("ER")
+                    .message("Not enough data for exchange rate")
+                    .build();
         }
 
-        // 날짜 오름차순 정렬
+        // 날짜 오름차순 정렬 (차트용)
         rateList.sort(Comparator.comparing(ExchangeRateEn::getDate));
 
         // 차트 데이터 구성
@@ -119,7 +122,7 @@ public class StockServiceSer {
                         .build())
                 .toList();
 
-        // 어제와 그저께 데이터
+        // 어제와 그저께 데이터 (정렬 후 뒤에서 2개)
         ExchangeRateEn yesterday = rateList.get(rateList.size() - 1);
         ExchangeRateEn dayBefore = rateList.get(rateList.size() - 2);
 
@@ -144,20 +147,21 @@ public class StockServiceSer {
                 .percentage(percentage)
                 .build();
 
-        // 환율 정보 DTO 생성
+        // 환율 정보 DTO
         MaResExchangeRateDto exchangeRateDto = MaResExchangeRateDto.builder()
                 .exchangePreviousClose(previousClose)
                 .exchangeChat(exchangeChartList)
                 .build();
 
-        // 최종 응답 DTO 생성
+        // 최종 응답
         return MaResDto.builder()
                 .code("SU")
                 .message("Success")
                 .exchangeRate(exchangeRateDto)
                 .build();
     }
-    
+
+
     public MaResDto oilPrice() {
         // 유가 종류 지정 (휘발유로 고정)
         OilType oilType = OilType.휘발유;

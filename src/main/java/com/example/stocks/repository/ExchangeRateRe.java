@@ -12,17 +12,16 @@ import java.util.List;
 public interface ExchangeRateRe extends JpaRepository<ExchangeRateEn, Integer> {
 
     @Query(value = """
-    SELECT * FROM exchange_rate
-    WHERE currency_code = :currencyCode
-      AND date BETWEEN DATE_SUB((
-          SELECT MAX(date) FROM exchange_rate WHERE currency_code = :currencyCode
-      ), INTERVAL 15 DAY)
-      AND (
-          SELECT MAX(date) FROM exchange_rate WHERE currency_code = :currencyCode
-      )
+    SELECT * FROM (
+        SELECT * FROM exchange_rate
+        WHERE currency_code = :currencyCode
+        ORDER BY date DESC
+        LIMIT 15
+    ) AS recent
     ORDER BY date ASC
     """, nativeQuery = true)
     List<ExchangeRateEn> findLatest15DaysByCurrency(@Param("currencyCode") String currencyCode);
+
 
     // 특정 통화와 날짜로 조회
 //    @Query(value = "SELECT * FROM exchange_rate WHERE currency_code = :currencyCode AND date = :date", nativeQuery = true)
