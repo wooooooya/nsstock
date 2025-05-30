@@ -1,9 +1,12 @@
 package com.example.stocks.controller;
 
 import com.example.stocks.dto.MaResDto;
+import com.example.stocks.dto.MaResGoldPriceDto;
 import com.example.stocks.service.StockServiceSer;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/stock")
@@ -11,9 +14,23 @@ import org.springframework.web.bind.annotation.*;
 public class MainController {
     private final StockServiceSer stockServiceSer;
 
-    // 코스피 메인 데이터 조회 API
     @GetMapping("/main")
     public MaResDto getMainStockInfo() {
-        return stockServiceSer.kospiIndex();
+        MaResDto kospiDto = stockServiceSer.kospiIndex();
+        MaResDto exchangeDto = stockServiceSer.exchangeRate();
+        MaResDto oilDto = stockServiceSer.oilPrice();
+        MaResDto goldDto= stockServiceSer.goldPrice();
+
+        return MaResDto.builder()
+                .code("SU")
+                .message("Success")
+                .kospiIndex(kospiDto != null ? kospiDto.getKospiIndex() : null)
+                .exchangeRate(exchangeDto != null ? exchangeDto.getExchangeRate() : null)
+                .oilPrice(oilDto != null ? oilDto.getOilPrice() : null)
+                .goldPrice(goldDto != null ? goldDto.getGoldPrice() : null)
+                .build();
     }
+
+
+
 }

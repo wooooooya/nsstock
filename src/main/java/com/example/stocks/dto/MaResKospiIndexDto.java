@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public  class MaResKospiIndexDto {
-    private MaResDto.PreviousClose previousClose; // 전일 종가 정보 (가격, 증감, 증감률)
+    private MaResDto.PreviousClose kospiPreviousClose; // 전일 종가 정보 (가격, 증감, 증감률)
     private List<KospiChart> kospiChat; // 코스피 지수 차트 데이터 (시간별 또는 날짜별)
 
     //코스피 차트

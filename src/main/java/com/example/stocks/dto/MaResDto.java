@@ -15,9 +15,10 @@ import java.util.List;
 public class MaResDto {
     private String code; // 응답 코드 (예: "200")
     private String message; // 응답 메시지 (예: "성공")
-    private MaResKospiIndexDto kospiRate; // 코스피
+    private MaResKospiIndexDto kospiIndex; // 코스피
     private MaResExchangeRateDto exchangeRate; // 환율
-    private MaResOilRateDto oilRate; // 유가
+    private MaResOilPriceDto oilPrice; // 유가
+    private MaResGoldPriceDto goldPrice; // 금
     private MaResDomesticHoldingsDto domesticHoldings; // 개인 보유량
     private MaResForeignHoldingsDto foreignHoldings; // 외국인 보유량
     private MaResInstitutionalHoldingsDto institutionalHoldings; // 기관 보유량

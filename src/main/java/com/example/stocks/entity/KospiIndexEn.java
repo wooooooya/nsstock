@@ -11,12 +11,12 @@ import java.time.LocalDate;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name="kospi_index")
-@Table(name="kospi_index")
+@Entity(name = "kospi_index")
+@Table(name = "kospi_index")
 public class KospiIndexEn {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false)
     private LocalDate date;
 
     @Column(nullable = false, precision = 7, scale = 2)

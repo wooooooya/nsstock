@@ -27,7 +27,6 @@ public class GoldPriceEn {
     @Column(nullable = false)
     private GoldType goldType;
 
-    @Temporal(TemporalType.DATE)
     @Column(nullable = false)
     private LocalDate date;
 

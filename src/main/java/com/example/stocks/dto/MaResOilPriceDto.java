@@ -12,9 +12,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MaResOilRateDto {
+public class MaResOilPriceDto {
     private MaResDto.PreviousClose oilPreviousClose; // 전일 유가 정보
-    private List<OilChart> oChat; // 유가 차트 데이터
+    private List<OilChart> oilChat; // 유가 차트 데이터
 
     //유가 차트
     @Data
