@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -161,68 +162,70 @@ public class StockServiceSer {
                 .build();
     }
 
-
     public MaResDto oilPrice() {
-        // 유가 종류 지정 (휘발유로 고정)
-        OilType oilType = OilType.휘발유;
+        List<MaResOilPriceDto.OilTypeData> oilTypeDataList = new ArrayList<>();
 
-        // startDate ~ 어제까지의 유가 데이터 조회
-        List<OilPriceEn> oilList = oilPriceRe.findAllBetweenDates(startDate, yesterday);
+        for (OilType oilType : OilType.values()) {
+            List<OilPriceEn> oilList = oilPriceRe.findLatest15DaysByOilType(oilType.name());
 
-        // 날짜 기준 오름차순 정렬
-        oilList.sort(Comparator.comparing(OilPriceEn::getDate));
+            if (oilList.size() < 2) {
+                continue; // 데이터가 부족하면 해당 유종은 제외
+            }
 
-        // 유가 데이터 중 지정한 oilType(휘발유)만 필터링해서 차트용 데이터로 변환
-        List<MaResOilPriceDto.OilChart> oilCharts = oilList.stream()
-                .filter(o -> o.getOilType() == oilType)
-                .map(item -> MaResOilPriceDto.OilChart.builder()
-                        .oChat(item.getAveragePriceCompetition().longValue()) // 평균 경쟁가격
-                        .oDate(item.getDate().toString()) // 날짜 문자열
-                        .build())
-                .toList();
+            // 날짜 오름차순 정렬
+            oilList.sort(Comparator.comparing(OilPriceEn::getDate));
 
-        // 어제 및 그 전날의 유가 데이터 조회
-        Optional<OilPriceEn> yesterdayOpt = oilPriceRe.findByOilTypeAndDate(oilType, yesterday);
-        Optional<OilPriceEn> dayBeforeOpt = oilPriceRe.findByOilTypeAndDate(oilType, dayBefore);
+            // 차트 데이터 생성
+            List<MaResOilPriceDto.OilChart> oilCharts = oilList.stream()
+                    .map(item -> MaResOilPriceDto.OilChart.builder()
+                            .oDate(item.getDate().toString())
+                            .oChat(item.getAveragePriceCompetition().longValue())
+                            .build())
+                    .toList();
 
-        // 두 날짜 중 하나라도 데이터가 없으면 null 반환
-        if (yesterdayOpt.isEmpty() || dayBeforeOpt.isEmpty()) {
-            return null;
+            // 가장 최근 2개 데이터 (전일, 전전일)
+            OilPriceEn yesterday = oilList.get(oilList.size() - 1);
+            OilPriceEn dayBefore = oilList.get(oilList.size() - 2);
+
+            BigDecimal yPrice = yesterday.getAveragePriceCompetition();
+            BigDecimal dPrice = dayBefore.getAveragePriceCompetition();
+            BigDecimal diff = yPrice.subtract(dPrice);
+            long indecrease = diff.longValue();
+
+            double percentage = dPrice.compareTo(BigDecimal.ZERO) == 0
+                    ? 0.0
+                    : diff.divide(dPrice, 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100)).doubleValue();
+
+            MaResDto.PreviousClose previousClose = MaResDto.PreviousClose.builder()
+                    .price(yPrice.longValue())
+                    .indecrease(indecrease)
+                    .percentage(percentage)
+                    .build();
+
+            // 유종별 데이터 담기
+            MaResOilPriceDto.OilTypeData typeData = MaResOilPriceDto.OilTypeData.builder()
+                    .oilType(oilType.name())
+                    .oilChat(oilCharts)
+                    .oilPreviousClose(previousClose)
+                    .build();
+
+            oilTypeDataList.add(typeData);
         }
 
-        // 어제와 그 전날의 평균 경쟁가격
-        BigDecimal yesterdayPrice = yesterdayOpt.get().getAveragePriceCompetition();
-        BigDecimal dayBeforePrice = dayBeforeOpt.get().getAveragePriceCompetition();
-
-        // 가격 차이 계산
-        BigDecimal diff = yesterdayPrice.subtract(dayBeforePrice);
-        long indecrease = diff.longValue(); // 증감 수치
-
-        // 증감률(%) 계산 (0으로 나누는 경우 방지)
-        double percentage = dayBeforePrice.compareTo(BigDecimal.ZERO) == 0
-                ? 0.0
-                : diff.divide(dayBeforePrice, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).doubleValue();
-
-        // 전일 종가 정보 생성
-        MaResDto.PreviousClose previousClose = MaResDto.PreviousClose.builder()
-                .price(yesterdayPrice.longValue()) // 전일 종가
-                .indecrease(indecrease) // 전일 대비 증감
-                .percentage(percentage) // 증감률
-                .build();
-
-        // 유가 응답 DTO 생성 (전일 종가 + 차트)
+        // 전체 유가 DTO 구성
         MaResOilPriceDto oilDto = MaResOilPriceDto.builder()
-                .oilPreviousClose(previousClose)
-                .oilChat(oilCharts)
+                .oilTypes(oilTypeDataList)
                 .build();
 
-        // 최종 응답 DTO 반환
         return MaResDto.builder()
-                .code("SU") // 성공 코드
-                .message("Success") // 성공 메시지
-                .oilPrice(oilDto) // 유가 데이터 세팅
+                .code("SU")
+                .message("Success")
+                .oilPrice(oilDto)
                 .build();
     }
+
+
 
 //    public MaResDto goldPrice() {
 //        GoldType goldType = GoldType.GOLD_1KG;
