@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 // 거래량 (예:상위 종목)
 @Data
 @NoArgsConstructor
@@ -14,5 +16,5 @@ public class MaResTradingVolumeDto {
     private String stocks; // 종목명
     private long volume; // 거래량
     private long volumeIndecrease; // 전일 대비 거래량 증감
-    private double volumePercentage; // 거래량 증감률 (%)
+    private BigDecimal volumePercentage; // 거래량 증감률 (%)
 }

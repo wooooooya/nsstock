@@ -19,8 +19,4 @@ public interface KospiIndexRe extends JpaRepository<KospiIndexEn, LocalDate> {
         ORDER BY date ASC
     """, nativeQuery = true)
     List<KospiIndexEn> findLatest15Days();
-
-    // 특정 날짜로 조회 ( 검색)
-//    @Query(value = "SELECT * FROM kospi_index WHERE date = :date", nativeQuery = true)
-//    Optional<KospiIndexEn> findByDate(@Param("date") LocalDate date);
 }

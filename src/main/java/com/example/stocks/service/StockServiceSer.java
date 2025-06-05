@@ -215,34 +215,15 @@ public class StockServiceSer {
     }
 
     public MaResDto tradingVolumeTop10() {
-        LocalDate recentDate = stockPriceRe.findMaxDate();
-        if (recentDate == null) {
-            return MaResDto.builder()
-                    .code("ER")
-                    .message("No data available")
-                    .build();
-        }
-
-        LocalDate previousDate = stockPriceRe.findPreviousDate(recentDate);
-
         List<StockPriceEn> recentList = stockPriceRe.findTop10ByRecentDateOrderByTradingVolumeDesc();
 
         List<MaResTradingVolumeDto> resultList = new ArrayList<>();
 
         for (StockPriceEn recentStock : recentList) {
             long recentVolume = recentStock.getTradingVolume();
-            long volumeDiff = 0L;
-            double volumeRate = 0.0;
+            long volumeDiff = recentStock.getPriceChange();
+            BigDecimal volumeRate = recentStock.getPriceChangeRate();
 
-            if (previousDate != null) {
-                String shortCode = recentStock.getStockInfo().getShortCode();
-                Optional<StockPriceEn> prevStockOpt = stockPriceRe.findByShortCodeAndDate(shortCode, previousDate);
-                if (prevStockOpt.isPresent()) {
-                    long prevVolume = prevStockOpt.get().getTradingVolume();
-                    volumeDiff = recentVolume - prevVolume;
-                    volumeRate = (prevVolume == 0) ? 0.0 : ((double) volumeDiff / prevVolume) * 100.0;
-                }
-            }
 
             resultList.add(MaResTradingVolumeDto.builder()
                     .stocks(recentStock.getStockInfo().getKorStockName())
@@ -258,5 +239,4 @@ public class StockServiceSer {
                 .tradingVolume(resultList)
                 .build();
     }
-
 }

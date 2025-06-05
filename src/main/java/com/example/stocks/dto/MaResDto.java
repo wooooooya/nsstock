@@ -18,11 +18,11 @@ public class MaResDto {
     private MaResKospiIndexDto kospiIndex; // 코스피
     private MaResExchangeRateDto exchangeRate; // 환율
     private MaResOilPriceDto oilPrice; // 유가
+    private List<MaResTradingVolumeDto> tradingVolume; // 거래량
 //    private MaResGoldPriceDto goldPrice; // 금
 //    private MaResDomesticHoldingsDto domesticHoldings; // 개인 보유량
 //    private MaResForeignHoldingsDto foreignHoldings; // 외국인 보유량
 //    private MaResInstitutionalHoldingsDto institutionalHoldings; // 기관 보유량
-    private List<MaResTradingVolumeDto> tradingVolume; // 거래량
 
     // 전일 종가(코스피, 환율, 유가)
     @Data

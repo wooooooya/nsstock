@@ -11,6 +11,5 @@ import java.util.Optional;
 
 @Repository
 public interface PredictedStockPriceRe extends JpaRepository<PredictedStockPriceEn, Long>{
-//    @Query(value = "SELECT * FROM predicted_stock_price WHERE predicted_id = :predicted_id", nativeQuery = true)
-//    Optional<PredictedStockPriceEn> findByPredictedId(@Param("predicted_id") Long predictedId);
+
 }
