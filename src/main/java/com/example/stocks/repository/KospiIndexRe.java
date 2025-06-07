@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 
+// 코스피 리포지토리
 @Repository
 public interface KospiIndexRe extends JpaRepository<KospiIndexEn, LocalDate> {
 

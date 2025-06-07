@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+// gold_price 테이블
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

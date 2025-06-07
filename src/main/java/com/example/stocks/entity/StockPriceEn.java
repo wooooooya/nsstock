@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.Date;
 
+// stock_price 테이블
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

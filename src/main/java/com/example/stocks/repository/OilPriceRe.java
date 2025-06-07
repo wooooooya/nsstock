@@ -8,9 +8,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+// 유가 리포지토리
 @Repository
 public interface OilPriceRe extends JpaRepository<OilPriceEn, Integer> {
 
+    // 파라미터(휘발유, 경유, 등유) 에 따른 최근 15일 유가 조회
     @Query(value = """
     SELECT * FROM oil_price
     WHERE oil_type = :oilType

@@ -2,13 +2,14 @@ package com.example.stocks.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-//메인 화면  Response
-@Data
+// Main  Response
+// 현재 금, 보유량은 사용 X
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -25,7 +26,7 @@ public class MaResDto {
 //    private MaResInstitutionalHoldingsDto institutionalHoldings; // 기관 보유량
 
     // 전일 종가(코스피, 환율, 유가)
-    @Data
+    @Getter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
@@ -36,7 +37,7 @@ public class MaResDto {
     }
 
     // 보유량 전일 정보 (내국인, 외국인, 기관)
-    @Data
+    @Getter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
@@ -47,7 +48,6 @@ public class MaResDto {
     }
 
     // 보유량 차트 (내국인, 외국인, 기관)
-    @Data
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder

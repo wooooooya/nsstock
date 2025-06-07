@@ -2,13 +2,11 @@ package com.example.stocks.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 // 개인 보유량
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

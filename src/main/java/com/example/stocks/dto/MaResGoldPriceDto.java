@@ -2,13 +2,11 @@ package com.example.stocks.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-// 금
-@Data
+// 금 (사용 X)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -17,7 +15,6 @@ public class MaResGoldPriceDto {
     private List<GoldChart> goldChat; // 유가 차트 데이터
 
     // 금 차트
-    @Data
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder

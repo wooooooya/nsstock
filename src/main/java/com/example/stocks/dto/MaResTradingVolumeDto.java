@@ -2,13 +2,13 @@ package com.example.stocks.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
-// 거래량 (예:상위 종목)
-@Data
+// 거래량 (상위 Top 10)
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

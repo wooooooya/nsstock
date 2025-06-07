@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+// exchange_rate 테이블
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

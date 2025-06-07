@@ -4,11 +4,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
@@ -47,7 +45,6 @@ public class PredictedStockPriceEn {
     @Column(nullable = false)
     private int predictedLowestPrice;
 
-    @CreationTimestamp // 타임스탬프 기능 적용
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
 }

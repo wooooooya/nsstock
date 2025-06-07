@@ -1,28 +1,25 @@
 package com.example.stocks.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
-//코스피
-@Data
+// 코스피
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public  class MaResKospiIndexDto {
-    private MaResDto.PreviousClose kospiPreviousClose; // 전일 종가 정보 (가격, 증감, 증감률)
-    private List<KospiChart> kospiChat; // 코스피 지수 차트 데이터 (시간별 또는 날짜별)
+    private MaResDto.PreviousClose kospiPreviousClose; // 전일 종가 정보
+    private List<KospiChart> kospiChat; // 코스피 지수 차트 데이터
 
     //코스피 차트
-    @Data
+    @Getter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
     public static class KospiChart {
         private long kChat; // 시점의 코스피 지수
-        private String kDate; // 해당 시점 (예: "2024-05-16")
+        private String kDate; // 해당 날짜
     }
 }

@@ -8,9 +8,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+// 환율 리포지토리
 @Repository
 public interface ExchangeRateRe extends JpaRepository<ExchangeRateEn, Integer> {
 
+    // 최근 15일 환율값 조회
     @Query(value = """
     SELECT * FROM (
         SELECT * FROM exchange_rate
