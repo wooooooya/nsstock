@@ -42,7 +42,7 @@ public class MainController {
 
      //GET  or POST /stock/prediction
     @RequestMapping(value = "/prediction", method = {RequestMethod.GET, RequestMethod.POST})
-    public PreResDto getPredictionInfo(@RequestParam(required = false) String shortCodeParam,
+    public PreResDto getPredictionInfo(@RequestParam(value = "shortCodeParam", required = false) String shortCodeParam,
                                        @RequestBody(required = false) PreReqDto preReqDtoBody) {
 
         String shortCode = null;
