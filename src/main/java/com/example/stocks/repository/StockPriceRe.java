@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional; // Optional 임포트가 필요합니다.
+import java.util.Optional;
 
 // 주식 가격 리포지토리
 @Repository
@@ -20,23 +20,19 @@ public interface StockPriceRe extends JpaRepository<StockPriceEn, Long> {
         SELECT
             sp.short_code AS stockID,
             si.kor_stock_name AS stockName,
-            sp.closing_price AS stockPrice,
             sp.trading_volume AS volume,
-            sp.date AS date  -- 서비스 로직에서 날짜가 필요하므로 추가합니다.
-        FROM stock_price sp
+            sp.date AS date,
+            sp.price_change AS priceChange,
+            sp.price_change_rate AS priceChangeRate
+        FROM stock_price sp -- 테이블 이름을 다시 'stock_price'로 수정했습니다.
         JOIN stock_info si ON sp.short_code = si.short_code
-        WHERE sp.date = (SELECT MAX(date) FROM stock_price)
+        WHERE sp.date = (SELECT MAX(date) FROM stock_price) -- 여기도 수정했습니다.
         ORDER BY sp.trading_volume DESC
         LIMIT 10
         """, nativeQuery = true)
     List<PreResStockListDto> findTop10ByRecentDateOrderByTradingVolumeDesc();
 
-    /**
-     * 특정 종목의 특정일 바로 이전 거래일의 데이터를 조회합니다.
-     * @param shortCode 종목 코드
-     * @param targetDate 기준이 되는 날짜
-     * @return Optional<StockPriceEn>
-     */
+    // 아래 다른 쿼리들의 테이블 이름도 'stock_price'로 다시 수정했습니다.
     @Query(value = """
         SELECT *
         FROM stock_price
@@ -49,8 +45,6 @@ public interface StockPriceRe extends JpaRepository<StockPriceEn, Long> {
             @Param("targetDate") Date targetDate
     );
 
-    // @param shortCode 종목 코드
-    //@return 해당 종목의 최근 정보
     @Query(value = """
         SELECT
             sp.short_code AS stockID,
@@ -64,7 +58,6 @@ public interface StockPriceRe extends JpaRepository<StockPriceEn, Long> {
         """, nativeQuery = true)
     List<PreResStockListDto> findByRecentDateAndShortCodeDto(@Param("shortCode") String shortCode);
 
-    // 이전 1년 동안의 정보 조회
     @Query(value = """
         SELECT
             DATE_FORMAT(date, '%Y-%m') AS month,
@@ -84,7 +77,6 @@ public interface StockPriceRe extends JpaRepository<StockPriceEn, Long> {
             @Param("endDate") Date endDate
     );
 
-    // 특정 종목에 대해 가장 최근의 주가 데이터를 원하는 개수(7개 30개)만큼 조회
     @Query(value = """
         SELECT * FROM stock_price
         WHERE short_code = :shortCode

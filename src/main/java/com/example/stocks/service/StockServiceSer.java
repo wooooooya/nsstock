@@ -201,46 +201,20 @@ public class StockServiceSer {
                 .oilPrice(oilDto)
                 .build();
     }
-    // 거래량 상위 10종목 데이터 처리
     public MaResDto findTop10ByRecentDateOrderByTradingVolumeDesc() {
-        // 1. 가장 최근 일자의 거래량 상위 10개 종목 리스트를 가져옵니다.
+        // 1. Repository에서 가격 변동 데이터까지 모두 포함된 리스트를 가져옵니다.
         List<PreResStockListDto> recentList = stockPriceRe.findTop10ByRecentDateOrderByTradingVolumeDesc();
 
-        List<MaResTradingVolumeDto> resultList = new ArrayList<>();
+        // 2. 최종 DTO 리스트로 간단하게 변환합니다. (계산 로직이 필요 없어졌습니다.)
+        List<MaResTradingVolumeDto> resultList = recentList.stream()
+                .map(recentStock -> MaResTradingVolumeDto.builder()
+                        .stocks(recentStock.getStockName())
+                        .volume(recentStock.getVolume())
+                        .volumeIndecrease(recentStock.getPriceChange()) // DB의 price_change 값을 사용
+                        .volumePercentage(recentStock.getPriceChangeRate()) // DB의 price_change_rate 값을 사용
+                        .build())
+                .toList();
 
-        // 2. 상위 10개 종목을 하나씩 순회합니다.
-        for (PreResStockListDto recentStock : recentList) {
-            long recentVolume = recentStock.getVolume(); // 당일 거래량
-            long volumeDiff = 0L; // 전일 대비 거래량 차이
-            BigDecimal volumeRate = BigDecimal.ZERO; // 전일 대비 거래량 등락률
-
-            // 3. Repository에 추가한 메서드를 호출해 전일 데이터를 조회합니다.
-            // PreResStockListDto 에 getStockID(), getDate() 메서드가 있어야 합니다.
-            Optional<StockPriceEn> previousStockOptional = stockPriceRe.findPreviousDayStockPrice(
-                    recentStock.getStockID(),
-                    recentStock.getDate()
-            );
-            // 4. 전일 데이터가 존재하는 경우에만 증감값과 증감률을 계산합니다.
-            if (previousStockOptional.isPresent()) {
-                // StockPriceEn 엔티티에 getTradingVolume() 메서드가 있다고 가정합니다.
-                long previousVolume = previousStockOptional.get().getTradingVolume();
-                volumeDiff = recentVolume - previousVolume; // 거래량 차이 계산
-
-                // 전일 거래량이 0이 아닐 경우에만 등락률을 계산 (0으로 나누기 방지)
-                if (previousVolume > 0) {
-                    volumeRate = BigDecimal.valueOf(volumeDiff)
-                            .multiply(BigDecimal.valueOf(100))
-                            .divide(BigDecimal.valueOf(previousVolume), 2, RoundingMode.HALF_UP);
-                }
-            }
-            // 5. 계산된 값을 DTO에 담아 리스트에 추가합니다.
-            resultList.add(MaResTradingVolumeDto.builder()
-                    .stocks(recentStock.getStockName())
-                    .volume(recentVolume)
-                    .volumeIndecrease(volumeDiff)
-                    .volumePercentage(volumeRate)
-                    .build());
-        }
         return MaResDto.builder()
                 .code("SU")
                 .message("Success")
