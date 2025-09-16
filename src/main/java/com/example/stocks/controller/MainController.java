@@ -22,7 +22,7 @@ public class MainController {
         MaResDto kospiDto = stockServiceSer.kospiIndex(); // 코스피 지수 데이터 조회
         MaResDto exchangeDto = stockServiceSer.exchangeRate(); // 환율 데이터 조회
         MaResDto oilDto = stockServiceSer.oilPrice(); // 유가 데이터 조회
-        MaResDto tradingVolumeDto = stockServiceSer.tradingVolumeTop10(); // 거래량 상위 10개 종목 데이터 조회
+        MaResDto tradingVolumeDto = stockServiceSer.findTop10ByRecentDateOrderByTradingVolumeDesc(); // 거래량 상위 10개 종목 데이터 조회
 
         // 각 데이터가 정상 조회되었는지 확인 후 값 할당, 실패 시 null 처리
         return MaResDto.builder()
