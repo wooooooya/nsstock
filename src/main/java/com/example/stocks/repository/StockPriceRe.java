@@ -20,19 +20,19 @@ public interface StockPriceRe extends JpaRepository<StockPriceEn, Long> {
         SELECT
             sp.short_code AS stockID,
             si.kor_stock_name AS stockName,
+            sp.closing_price AS stockPrice, 
             sp.trading_volume AS volume,
             sp.date AS date,
             sp.price_change AS priceChange,
             sp.price_change_rate AS priceChangeRate
-        FROM stock_price sp -- 테이블 이름을 다시 'stock_price'로 수정했습니다.
+        FROM stock_price sp
         JOIN stock_info si ON sp.short_code = si.short_code
-        WHERE sp.date = (SELECT MAX(date) FROM stock_price) -- 여기도 수정했습니다.
+        WHERE sp.date = (SELECT MAX(date) FROM stock_price)
         ORDER BY sp.trading_volume DESC
         LIMIT 10
         """, nativeQuery = true)
     List<PreResStockListDto> findTop10ByRecentDateOrderByTradingVolumeDesc();
 
-    // 아래 다른 쿼리들의 테이블 이름도 'stock_price'로 다시 수정했습니다.
     @Query(value = """
         SELECT *
         FROM stock_price
