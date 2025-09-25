@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/stock")  // 모든 URL 앞에 /stock 붙음
 @RequiredArgsConstructor   // final 필드를 자동으로 생성자 주입
+@CrossOrigin(origins = "*")
 public class MainController {
 
     private final StockServiceSer stockServiceSer; // 메인 의존성
@@ -40,7 +41,7 @@ public class MainController {
         return dto != null && "SU".equals(dto.getCode());
     }
 
-     //GET  or POST /stock/prediction
+    //GET  or POST /stock/prediction
     @RequestMapping(value = "/prediction", method = {RequestMethod.GET, RequestMethod.POST})
     public PreResDto getPredictionInfo(@RequestParam(value = "shortCodeParam", required = false) String shortCodeParam,
                                        @RequestBody(required = false) PreReqDto preReqDtoBody) {
