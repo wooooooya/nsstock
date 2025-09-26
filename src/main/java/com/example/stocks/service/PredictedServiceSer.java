@@ -80,7 +80,7 @@ public class PredictedServiceSer {
         stockPrices7Days.sort(Comparator.comparing(StockPriceEn::getDate));
         stockPrices30Days.sort(Comparator.comparing(StockPriceEn::getDate));
 
-        // --- LocalDate를 사용한 날짜 계산  ---
+        // --- LocalDate를 사용한 날짜 계산 (개선됨) ---
         LocalDate today = LocalDate.now();
         Date thisMonthStart = Date.from(today.withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
         Date oneYearAgo = Date.from(today.withDayOfMonth(1).minusYears(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
@@ -169,7 +169,7 @@ public class PredictedServiceSer {
         String shortCode = preReqDto.getShortCode();
         List<PreResPredictedDto> predictedList = predictedStockPriceRe.findLatestSevenPredictionsByShortCode(shortCode);
 
-        // --- 불필요한 null 체크 제거 ---
+        // --- 불필요한 null 체크 제거 (개선됨) ---
         return PreResRateDto.builder()
                 .previousList(predictedList.isEmpty() ? null : predictedList)
                 .build();

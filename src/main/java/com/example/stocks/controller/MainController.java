@@ -41,7 +41,7 @@ public class MainController {
         return dto != null && "SU".equals(dto.getCode());
     }
 
-     //GET  or POST /stock/prediction
+    //GET  or POST /stock/prediction
     @RequestMapping(value = "/prediction", method = {RequestMethod.GET, RequestMethod.POST})
     public PreResDto getPredictionInfo(@RequestParam(value = "shortCodeParam", required = false) String shortCodeParam,
                                        @RequestBody(required = false) PreReqDto preReqDtoBody) {
