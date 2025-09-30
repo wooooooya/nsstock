@@ -19,6 +19,6 @@ public class UserFavoriteEn {
     private UserInfoEn userInfo;
 
     @Id // 복합 키의 일부
-    @Column(name = "stock_code", length = 6)
+    @Column(name = "stock_code", length = 10)
     private String stockCode;
 }
